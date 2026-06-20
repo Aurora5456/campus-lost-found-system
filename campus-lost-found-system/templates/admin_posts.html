@@ -26,15 +26,42 @@
   </div>
 </section>
 <form class="search-bar admin-search" method="get">
-  <input name="q" value="{{ keyword }}" placeholder="搜索标题、物品名称、描述或地点">
-  <button class="btn dark" type="submit">搜索</button>
-  {% if keyword %}<a class="btn ghost" href="{{ url_for('admin_posts') }}">清空</a>{% endif %}
+  <input name="q" value="{{ filters.q }}" placeholder="搜索标题、物品名称、描述或地点">
+  <select name="type">
+    <option value="">全部类型</option>
+    <option value="lost" {% if filters.type == 'lost' %}selected{% endif %}>失物</option>
+    <option value="found" {% if filters.type == 'found' %}selected{% endif %}>招领</option>
+  </select>
+  <select name="category">
+    <option value="">全部分类</option>
+    {% for key, label in categories %}
+      <option value="{{ key }}" {% if filters.category == key %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="status">
+    <option value="">全部状态</option>
+    <option value="open" {% if filters.status == 'open' %}selected{% endif %}>未解决</option>
+    <option value="resolved" {% if filters.status == 'resolved' %}selected{% endif %}>已解决</option>
+  </select>
+  <button class="btn dark" type="submit">筛选</button>
+  {% if filters.q or filters.type or filters.category or filters.status %}<a class="btn ghost" href="{{ url_for('admin_posts') }}">清空</a>{% endif %}
 </form>
+
+<form id="bulkForm" class="bulk-bar" method="post" action="{{ url_for('admin_bulk_posts') }}" data-confirm="确认对所勾选的帖子执行批量操作吗？">
+  <span>批量操作（勾选下方帖子后选择）：</span>
+  <button class="btn dark small" type="submit" name="action" value="resolve">标记已解决</button>
+  <button class="btn secondary small" type="submit" name="action" value="reopen">重新打开</button>
+  <button class="btn danger small" type="submit" name="action" value="delete">批量删除</button>
+</form>
+
 <section class="panel table-panel">
   <table>
     <thead>
       <tr>
+        <th><input type="checkbox" data-check-all="post_ids"></th>
         <th>类型</th>
+        <th>分类</th>
+        <th>状态</th>
         <th>标题</th>
         <th>物品</th>
         <th>地点</th>
@@ -46,7 +73,10 @@
     <tbody>
       {% for post in posts %}
         <tr>
+          <td><input type="checkbox" name="post_ids" value="{{ post.id }}" form="bulkForm"></td>
           <td><span class="badge {{ post.post_type }}">{{ post.type_label }}</span></td>
+          <td>{{ post.category_label }}</td>
+          <td><span class="badge status {% if post.is_resolved %}resolved{% else %}open{% endif %}">{{ post.status_label }}</span></td>
           <td>{{ post.title }}</td>
           <td>{{ post.item_name }}</td>
           <td>{{ post.location }}</td>
@@ -54,15 +84,25 @@
           <td>{{ post.created_at.strftime('%Y-%m-%d') }}</td>
           <td class="table-actions">
             <a class="btn secondary small" href="{{ url_for('admin_edit_post', post_id=post.id) }}">编辑</a>
+            <form method="post" action="{{ url_for('admin_update_status', post_id=post.id) }}">
+              {% if post.is_resolved %}
+                <input type="hidden" name="status" value="open">
+                <button class="btn ghost small" type="submit">重新打开</button>
+              {% else %}
+                <input type="hidden" name="status" value="resolved">
+                <button class="btn dark small" type="submit">标记已解决</button>
+              {% endif %}
+            </form>
             <form method="post" action="{{ url_for('admin_delete_post', post_id=post.id) }}" data-confirm="确认由管理员删除这条帖子吗？">
               <button class="btn danger small" type="submit">删除</button>
             </form>
           </td>
         </tr>
       {% else %}
-        <tr><td colspan="7" class="empty-cell">暂无帖子</td></tr>
+        <tr><td colspan="10" class="empty-cell">暂无帖子</td></tr>
       {% endfor %}
     </tbody>
   </table>
 </section>
+{% include "_pagination.html" %}
 {% endblock %}

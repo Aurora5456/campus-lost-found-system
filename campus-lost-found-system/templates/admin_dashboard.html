@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}数据看板 - 管理员后台{% endblock %}
+{% block content %}
+<section class="section-head">
+  <div>
+    <p class="eyebrow">Admin Console</p>
+    <h1>数据看板</h1>
+  </div>
+  <a class="btn ghost" href="{{ url_for('admin_posts') }}">返回帖子管理</a>
+</section>
+
+<section class="dashboard-grid admin-metrics">
+  <div class="metric-card">
+    <span>帖子总数</span>
+    <strong>{{ data.total }}</strong>
+  </div>
+  <div class="metric-card">
+    <span>注册学生</span>
+    <strong>{{ data.students }}</strong>
+  </div>
+  <div class="metric-card">
+    <span>私信总数</span>
+    <strong>{{ data.messages }}</strong>
+  </div>
+  <div class="metric-card highlight">
+    <span>已解决率</span>
+    <strong>{{ data.resolved_rate }}%</strong>
+  </div>
+</section>
+
+<section class="chart-grid">
+  <div class="panel chart-card">
+    <h3>近 14 天新增帖子</h3>
+    <canvas id="trendChart" height="140"></canvas>
+  </div>
+  <div class="panel chart-card">
+    <h3>失物 / 招领占比</h3>
+    <canvas id="typeChart" height="140"></canvas>
+  </div>
+  <div class="panel chart-card chart-wide">
+    <h3>各分类帖子数量</h3>
+    <canvas id="categoryChart" height="120"></canvas>
+  </div>
+</section>
+
+<script id="dashboard-data" type="application/json">
+{
+  "trendLabels": {{ data.trend_labels | tojson }},
+  "trendCounts": {{ data.trend_counts | tojson }},
+  "typeCounts": [{{ data.type_counts.lost }}, {{ data.type_counts.found }}],
+  "categoryLabels": {{ data.category_labels | tojson }},
+  "categoryCounts": {{ data.category_counts | tojson }}
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -20,13 +20,19 @@
         <a href="{{ url_for('student_home') }}">首页</a>
         <a href="{{ url_for('create_post') }}">发布帖子</a>
         <a href="{{ url_for('my_posts') }}">我的帖子</a>
-        <a href="{{ url_for('messages') }}">我的私信</a>
+        <a class="nav-badge-link" href="{{ url_for('messages') }}">我的私信{% if unread_count %}<span class="nav-badge">{{ unread_count }}</span>{% endif %}</a>
+        <a href="{{ url_for('settings') }}">设置</a>
         <a href="{{ url_for('logout') }}">退出</a>
       {% elif current_admin %}
         <a href="{{ url_for('admin_posts') }}">帖子管理</a>
+        <a href="{{ url_for('admin_students') }}">用户管理</a>
+        <a href="{{ url_for('admin_messages') }}">私信监管</a>
+        <a href="{{ url_for('admin_announcements') }}">公告</a>
+        <a href="{{ url_for('admin_dashboard') }}">数据看板</a>
         <a href="{{ url_for('logout') }}">退出</a>
       {% else %}
         <a href="{{ url_for('student_login') }}">学生登录</a>
+        <a href="{{ url_for('student_register') }}">注册</a>
         <a href="{{ url_for('admin_login') }}">管理员登录</a>
       {% endif %}
     </nav>
@@ -42,6 +48,16 @@
         </section>
       {% endif %}
     {% endwith %}
+    {% if current_student and announcements %}
+      <section class="announce-stack">
+        {% for ann in announcements %}
+          <div class="announce-card">
+            <strong>📢 {{ ann.title }}</strong>
+            <p>{{ ann.body }}</p>
+          </div>
+        {% endfor %}
+      </section>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 

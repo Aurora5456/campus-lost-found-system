@@ -12,6 +12,23 @@
     </select>
   </label>
 </div>
+<div class="form-grid">
+  <label>物品分类
+    <select name="category">
+      {% for key, label in categories %}
+        <option value="{{ key }}" {% if (post and post.category == key) or (not post and key == 'other') %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  {% if show_status %}
+    <label>处理状态
+      <select name="status">
+        <option value="open" {% if post and post.status == 'open' %}selected{% endif %}>寻找中 / 招领中</option>
+        <option value="resolved" {% if post and post.status == 'resolved' %}selected{% endif %}>已找回 / 已归还</option>
+      </select>
+    </label>
+  {% endif %}
+</div>
 <label>地点
   <input name="location" value="{{ post.location if post else '' }}" placeholder="丢失或拾取地点" required>
 </label>
@@ -21,9 +38,19 @@
 <label>联系说明
   <input name="contact_note" value="{{ post.contact_note if post else '' }}" placeholder="例如 请通过站内私信联系" required>
 </label>
-<label>图片上传
-  <input name="image" type="file" accept=".jpg,.jpeg,.png,.gif">
+<label>图片上传（可多选，最多 6 张，自动压缩并生成缩略图）
+  <input name="images" type="file" accept=".jpg,.jpeg,.png,.gif" multiple>
 </label>
-{% if post and post.image_path %}
-  <p class="muted">当前图片：{{ post.image_path }}。重新上传会替换图片。</p>
+{% if post and post.images %}
+  <div class="existing-images">
+    <p class="muted">当前图片（勾选可删除）：</p>
+    <div class="thumb-row">
+      {% for image in post.images %}
+        <label class="thumb-item">
+          <img src="{{ url_for('static', filename=image.thumb_path or image.image_path) }}" alt="已上传图片">
+          <span><input type="checkbox" name="delete_images" value="{{ image.id }}"> 删除</span>
+        </label>
+      {% endfor %}
+    </div>
+  </div>
 {% endif %}

@@ -50,24 +50,47 @@
 
   <div class="board-main">
     <form class="search-bar elevated" method="get">
-      <input name="q" value="{{ keyword }}" placeholder="搜索标题、物品名称、描述或地点">
+      <input name="q" value="{{ filters.q }}" placeholder="搜索标题、物品名称、描述或地点">
       <button class="btn primary" type="submit">搜索</button>
-      {% if keyword %}<a class="btn ghost" href="{{ url_for('student_home') }}">清空</a>{% endif %}
+      {% if filters.q or filters.type or filters.category or filters.status %}<a class="btn ghost" href="{{ url_for('student_home') }}">清空</a>{% endif %}
+    </form>
+
+    <form class="filter-bar" method="get">
+      {% if filters.q %}<input type="hidden" name="q" value="{{ filters.q }}">{% endif %}
+      <select name="type" onchange="this.form.submit()">
+        <option value="">全部类型</option>
+        <option value="lost" {% if filters.type == 'lost' %}selected{% endif %}>失物</option>
+        <option value="found" {% if filters.type == 'found' %}selected{% endif %}>招领</option>
+      </select>
+      <select name="category" onchange="this.form.submit()">
+        <option value="">全部分类</option>
+        {% for key, label in categories %}
+          <option value="{{ key }}" {% if filters.category == key %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" onchange="this.form.submit()">
+        <option value="">全部状态</option>
+        <option value="open" {% if filters.status == 'open' %}selected{% endif %}>未解决</option>
+        <option value="resolved" {% if filters.status == 'resolved' %}selected{% endif %}>已解决</option>
+      </select>
+      <noscript><button class="btn primary" type="submit">筛选</button></noscript>
     </form>
 
     <section class="post-grid modern-post-grid">
       {% for post in posts %}
-        <article class="post-card">
+        <article class="post-card {% if post.is_resolved %}resolved{% endif %}">
           <a href="{{ url_for('post_detail', post_id=post.id) }}" class="image-frame">
-            {% if post.image_path %}
-              <img src="{{ url_for('static', filename=post.image_path) }}" alt="{{ post.item_name }}">
+            {% if post.cover_thumb %}
+              <img src="{{ url_for('static', filename=post.cover_thumb) }}" alt="{{ post.item_name }}">
             {% else %}
               <div class="image-placeholder">{{ post.type_label }}</div>
             {% endif %}
+            {% if post.is_resolved %}<span class="ribbon">{{ post.status_label }}</span>{% endif %}
           </a>
           <div class="card-body">
             <div class="card-topline">
               <span class="badge {{ post.post_type }}">{{ post.type_label }}</span>
+              <span class="badge cat">{{ post.category_label }}</span>
               <span class="meta">{{ post.created_at.strftime('%m-%d %H:%M') }}</span>
             </div>
             <h3><a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a></h3>
@@ -80,9 +103,11 @@
           </div>
         </article>
       {% else %}
-        <div class="empty-state">暂无帖子，试试发布第一条失物招领信息。</div>
+        <div class="empty-state">没有符合条件的帖子，换个条件或发布第一条信息。</div>
       {% endfor %}
     </section>
+
+    {% include "_pagination.html" %}
   </div>
 </section>
 {% endblock %}

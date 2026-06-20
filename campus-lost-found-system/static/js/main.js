@@ -7,4 +7,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  document.querySelectorAll("input[data-check-all]").forEach((master) => {
+    const name = master.getAttribute("data-check-all");
+    master.addEventListener("change", () => {
+      document
+        .querySelectorAll(`input[type="checkbox"][name="${name}"]`)
+        .forEach((box) => {
+          box.checked = master.checked;
+        });
+    });
+  });
 });

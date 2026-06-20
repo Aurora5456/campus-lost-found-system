@@ -1,0 +1,28 @@
+{% if pagination and pagination.pages > 1 %}
+<nav class="pagination">
+  {% set args = {} %}
+  {% if filters %}
+    {% if filters.q %}{% set _ = args.update({'q': filters.q}) %}{% endif %}
+    {% if filters.type %}{% set _ = args.update({'type': filters.type}) %}{% endif %}
+    {% if filters.category %}{% set _ = args.update({'category': filters.category}) %}{% endif %}
+    {% if filters.status %}{% set _ = args.update({'status': filters.status}) %}{% endif %}
+  {% endif %}
+  {% if pagination.has_prev %}
+    <a class="btn ghost small" href="{{ url_for(request.endpoint, page=pagination.prev_num, **args) }}">上一页</a>
+  {% else %}
+    <span class="btn ghost small disabled">上一页</span>
+  {% endif %}
+  {% for p in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+    {% if p %}
+      <a class="page-num {% if p == pagination.page %}active{% endif %}" href="{{ url_for(request.endpoint, page=p, **args) }}">{{ p }}</a>
+    {% else %}
+      <span class="page-gap">…</span>
+    {% endif %}
+  {% endfor %}
+  {% if pagination.has_next %}
+    <a class="btn ghost small" href="{{ url_for(request.endpoint, page=pagination.next_num, **args) }}">下一页</a>
+  {% else %}
+    <span class="btn ghost small disabled">下一页</span>
+  {% endif %}
+</nav>
+{% endif %}

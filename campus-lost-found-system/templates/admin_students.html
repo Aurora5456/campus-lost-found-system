@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}管理员后台 - 用户管理{% endblock %}
+{% block content %}
+<section class="section-head">
+  <div>
+    <p class="eyebrow">Admin Console</p>
+    <h1>用户管理</h1>
+  </div>
+</section>
+<form class="search-bar admin-search" method="get">
+  <input name="q" value="{{ keyword }}" placeholder="按姓名 / 学号 / 邮箱搜索">
+  <button class="btn dark" type="submit">搜索</button>
+  {% if keyword %}<a class="btn ghost" href="{{ url_for('admin_students') }}">清空</a>{% endif %}
+</form>
+<section class="panel table-panel">
+  <table>
+    <thead>
+      <tr>
+        <th>学号</th>
+        <th>姓名</th>
+        <th>邮箱</th>
+        <th>帖子数</th>
+        <th>状态</th>
+        <th>注册时间</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for student in students %}
+        <tr>
+          <td>{{ student.student_no }}</td>
+          <td>{{ student.name }}</td>
+          <td>{{ student.email or '—' }}</td>
+          <td>{{ post_counts.get(student.id, 0) }}</td>
+          <td>
+            {% if student.is_active %}
+              <span class="badge status open">正常</span>
+            {% else %}
+              <span class="badge status resolved">已封禁</span>
+            {% endif %}
+          </td>
+          <td>{{ student.created_at.strftime('%Y-%m-%d') }}</td>
+          <td class="table-actions">
+            <form method="post" action="{{ url_for('admin_toggle_student', student_id=student.id) }}">
+              {% if student.is_active %}
+                <button class="btn secondary small" type="submit">封禁</button>
+              {% else %}
+                <button class="btn dark small" type="submit">解封</button>
+              {% endif %}
+            </form>
+            <form method="post" action="{{ url_for('admin_reset_student_password', student_id=student.id) }}" data-confirm="确认重置该学生密码吗？（留空将随机生成）">
+              <input class="mini-input" type="text" name="new_password" placeholder="新密码(可留空)">
+              <button class="btn ghost small" type="submit">重置密码</button>
+            </form>
+            <form method="post" action="{{ url_for('admin_delete_student', student_id=student.id) }}" data-confirm="确认删除该学生及其所有帖子和私信吗？此操作不可恢复。">
+              <button class="btn danger small" type="submit">删除</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="empty-cell">暂无学生</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% include "_pagination.html" %}
+{% endblock %}
