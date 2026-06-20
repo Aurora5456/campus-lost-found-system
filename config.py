@@ -14,6 +14,11 @@ class Config:
         "DATABASE_URL",
         f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4",
     )
+    # Render/Heroku 给的连接串是 postgres://，SQLAlchemy 只认 postgresql://
+    if SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
+        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace(
+            "postgres://", "postgresql://", 1
+        )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     if SQLALCHEMY_DATABASE_URI.startswith("sqlite"):
         SQLALCHEMY_ENGINE_OPTIONS = {

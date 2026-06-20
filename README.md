@@ -10,14 +10,15 @@
 - 学生账号：学号 `20230001` ~ `20230010`，密码均 `123456`
 - 管理员账号：`admin` / `admin123`
 
-> 免费版闲置约 15 分钟会休眠，首次打开需等约 30-50 秒冷启动；服务重启/重新部署后数据会重置回种子数据。
+> 免费版闲置约 15 分钟会休眠，首次打开需等约 30-50 秒冷启动。数据存于 Render PostgreSQL，重启/重新部署不会丢失。
 
 ## 数据库说明
 
-项目同时支持两种数据库，由环境变量 `DATABASE_URL` 决定：
+项目支持三种数据库，由环境变量 `DATABASE_URL` 决定（应用会自动建表并写入种子数据）：
 
 - **MySQL**（默认，适合本地课程演示）：不设置 `DATABASE_URL` 时，使用 `config.py` 中的 MySQL 配置。
-- **SQLite**（零配置，适合快速运行 / 线上部署）：设置 `DATABASE_URL=sqlite:///instance/dev.db` 即可，无需安装 MySQL，首次启动自动建表并写入种子数据。Render 线上即采用此方式。
+- **SQLite**（零配置，适合快速运行）：设置 `DATABASE_URL=sqlite:///instance/dev.db` 即可，无需安装 MySQL，首次启动自动建表并写入种子数据。
+- **PostgreSQL**（线上持久化，Render 采用）：设置 `DATABASE_URL=postgresql://...`。`render.yaml` 已声明一个 free 计划的 PostgreSQL 数据库并自动注入连接串，数据**不会**随服务重启/重新部署而丢失（种子数据仅在首次为空时写入，幂等）。
 
 ## 技术栈
 
