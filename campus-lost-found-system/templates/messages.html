@@ -11,7 +11,7 @@
   {% for thread in threads %}
     <a class="row-card message-row" href="{{ url_for('chat', post_id=thread.post.id, other_id=thread.other.id) }}">
       <div>
-        <h3>{{ thread.other.name }} · {{ thread.post.title }}</h3>
+        <h3>{{ thread.other.name }} · {{ thread.post.title }}{% if thread.unread %}<span class="nav-badge">{{ thread.unread }}</span>{% endif %}</h3>
         <p class="meta">关联帖子：{{ thread.post.item_name }} / {{ thread.post.type_label }}</p>
         <p>{{ thread.message.content[:80] }}{% if thread.message.content|length > 80 %}...{% endif %}</p>
       </div>

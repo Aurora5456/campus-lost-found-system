@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}个人设置 - 校园失物招领系统{% endblock %}
+{% block content %}
+<section class="section-head">
+  <div>
+    <p class="eyebrow">Settings</p>
+    <h1>个人设置</h1>
+  </div>
+</section>
+<form class="panel form-card" method="post" style="max-width: 560px;">
+  <label>学号
+    <input value="{{ student.student_no }}" disabled>
+  </label>
+  <label>姓名
+    <input value="{{ student.name }}" disabled>
+  </label>
+  <label>通知邮箱
+    <input name="email" type="email" value="{{ student.email or '' }}" placeholder="用于接收私信提醒和找回密码">
+  </label>
+  <label class="checkbox-line">
+    <input type="checkbox" name="notify_email" {% if student.notify_email %}checked{% endif %}>
+    有人给我发私信时通过邮件通知我
+  </label>
+  <p class="muted">提示：邮件通知需要管理员在服务器上配置 SMTP（环境变量 SMTP_HOST 等）。未配置时不会发送邮件。</p>
+  <div class="action-row">
+    <button class="btn primary" type="submit">保存设置</button>
+    <a class="btn ghost" href="{{ url_for('student_home') }}">返回</a>
+  </div>
+</form>
+{% endblock %}

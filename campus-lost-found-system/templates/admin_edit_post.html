@@ -8,7 +8,7 @@
     <p>发布人：{{ post.student.name }}（{{ post.student.student_no }}）</p>
   </div>
   <form class="panel form-card" method="post" enctype="multipart/form-data">
-    {% include "_post_fields.html" %}
+    {% with show_status = True %}{% include "_post_fields.html" %}{% endwith %}
     <div class="action-row">
       <button class="btn dark" type="submit">保存后台修改</button>
       <a class="btn ghost" href="{{ url_for('admin_posts') }}">返回后台</a>

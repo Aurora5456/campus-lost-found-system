@@ -4,7 +4,9 @@ CREATE DATABASE IF NOT EXISTS lost_found_system
 
 USE lost_found_system;
 
+DROP TABLE IF EXISTS password_reset_tokens;
 DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS post_images;
 DROP TABLE IF EXISTS posts;
 DROP TABLE IF EXISTS admins;
 DROP TABLE IF EXISTS students;
@@ -14,6 +16,8 @@ CREATE TABLE students (
   student_no VARCHAR(32) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   name VARCHAR(80) NOT NULL,
+  email VARCHAR(120),
+  notify_email BOOLEAN NOT NULL DEFAULT TRUE,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -29,6 +33,8 @@ CREATE TABLE posts (
   title VARCHAR(160) NOT NULL,
   item_name VARCHAR(120) NOT NULL,
   post_type VARCHAR(20) NOT NULL,
+  category VARCHAR(40) NOT NULL DEFAULT 'other',
+  status VARCHAR(20) NOT NULL DEFAULT 'open',
   description TEXT NOT NULL,
   location VARCHAR(160) NOT NULL,
   contact_note VARCHAR(255) NOT NULL,
@@ -37,6 +43,15 @@ CREATE TABLE posts (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_posts_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE post_images (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  post_id INT NOT NULL,
+  image_path VARCHAR(255) NOT NULL,
+  thumb_path VARCHAR(255),
+  sort_order INT NOT NULL DEFAULT 0,
+  CONSTRAINT fk_post_images_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE messages (
@@ -50,6 +65,16 @@ CREATE TABLE messages (
   CONSTRAINT fk_messages_sender FOREIGN KEY (sender_id) REFERENCES students(id) ON DELETE CASCADE,
   CONSTRAINT fk_messages_receiver FOREIGN KEY (receiver_id) REFERENCES students(id) ON DELETE CASCADE,
   CONSTRAINT fk_messages_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE password_reset_tokens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  token VARCHAR(64) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  used BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_reset_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 测试账号和示例数据建议使用 python init_db.py 初始化，

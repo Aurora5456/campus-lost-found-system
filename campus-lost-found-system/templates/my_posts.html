@@ -13,6 +13,8 @@
     <article class="row-card">
       <div>
         <span class="badge {{ post.post_type }}">{{ post.type_label }}</span>
+        <span class="badge cat">{{ post.category_label }}</span>
+        <span class="badge status {% if post.is_resolved %}resolved{% else %}open{% endif %}">{{ post.status_label }}</span>
         <h3><a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a></h3>
         <p class="meta">{{ post.item_name }} · {{ post.location }} · {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
       </div>

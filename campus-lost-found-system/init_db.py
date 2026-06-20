@@ -8,6 +8,9 @@ from models import Admin, Post, Student, db
 
 
 def ensure_database_exists():
+    # 非 MySQL（例如本地用 SQLite 演示）无需预创建数据库
+    if not Config.SQLALCHEMY_DATABASE_URI.startswith("mysql"):
+        return
     server_uri = (
         f"mysql+pymysql://{Config.DB_USER}:{Config.DB_PASSWORD}"
         f"@{Config.DB_HOST}:{Config.DB_PORT}/?charset=utf8mb4"
@@ -25,11 +28,11 @@ def ensure_database_exists():
 
 def seed_students():
     students = [
-        ("20230001", "123456", "张三"),
-        ("20230002", "123456", "李四"),
-        ("20230003", "123456", "王五"),
+        ("20230001", "123456", "张三", "zhangsan@example.com"),
+        ("20230002", "123456", "李四", "lisi@example.com"),
+        ("20230003", "123456", "王五", "wangwu@example.com"),
     ]
-    for student_no, password, name in students:
+    for student_no, password, name, email in students:
         student = Student.query.filter_by(student_no=student_no).first()
         if not student:
             db.session.add(
@@ -37,6 +40,7 @@ def seed_students():
                     student_no=student_no,
                     password_hash=generate_password_hash(password),
                     name=name,
+                    email=email,
                 )
             )
 
@@ -59,15 +63,30 @@ def seed_posts():
             title="图书馆二楼遗失黑色保温杯",
             item_name="黑色保温杯",
             post_type="lost",
+            category="daily",
+            status="open",
             description="杯身有校园纪念贴纸，周一下午自习后发现不见。",
             location="图书馆二楼靠窗自习区",
             contact_note="请通过站内私信联系我，感谢。",
             student_id=zhang.id,
         ),
         Post(
+            title="图书馆捡到一个黑色水杯",
+            item_name="黑色保温杯",
+            post_type="found",
+            category="daily",
+            status="open",
+            description="在图书馆二楼自习区捡到黑色保温杯，杯身有贴纸。",
+            location="图书馆二楼",
+            contact_note="描述贴纸图案后即可领取。",
+            student_id=wang.id,
+        ),
+        Post(
             title="拾到一张校园卡",
             item_name="校园卡",
             post_type="found",
+            category="card",
+            status="open",
             description="卡面姓名被磨损，卡号末尾为 0928。",
             location="第一食堂门口",
             contact_note="请说明卡号信息后领取。",
@@ -77,7 +96,9 @@ def seed_posts():
             title="操场看台捡到蓝牙耳机盒",
             item_name="蓝牙耳机盒",
             post_type="found",
-            description="白色耳机盒，外壳有轻微划痕。",
+            category="electronics",
+            status="resolved",
+            description="白色耳机盒，外壳有轻微划痕，失主已认领。",
             location="东区操场看台第三排",
             contact_note="晚上 7 点后可私信约地点。",
             student_id=wang.id,

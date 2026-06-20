@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.ruff_cache/
+
+# Flask 实例文件夹与本地数据库
+instance/
+*.db
+
+# 用户上传的图片（保留目录由程序自动创建）
+static/uploads/
+
+# 运行日志
+*.log
+
+# 编辑器
+.vscode/
+.idea/
