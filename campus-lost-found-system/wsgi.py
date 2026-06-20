@@ -20,6 +20,7 @@ from app import app  # noqa: E402
 from init_db import (  # noqa: E402
     seed_admins,
     seed_announcements,
+    seed_messages,
     seed_posts,
     seed_students,
 )
@@ -32,4 +33,6 @@ with app.app_context():
     db.session.commit()
     seed_posts()
     seed_announcements()
+    db.session.commit()
+    seed_messages()
     db.session.commit()
