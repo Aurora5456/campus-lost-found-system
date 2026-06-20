@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}与 {{ other.name }} 私聊 - 校园失物招领系统{% endblock %}
+{% block content %}
+<section class="chat-shell panel">
+  <div class="chat-head">
+    <div>
+      <p class="eyebrow">Chat</p>
+      <h1>与 {{ other.name }} 私聊</h1>
+      <p class="meta">关联帖子：<a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a></p>
+    </div>
+    <a class="btn ghost" href="{{ url_for('messages') }}">返回私信</a>
+  </div>
+  <div class="chat-list">
+    {% for msg in chat_messages %}
+      <div class="bubble {% if msg.sender_id == current_student.id %}mine{% else %}theirs{% endif %}">
+        <p>{{ msg.content }}</p>
+        <small>{{ msg.sender.name }} · {{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      </div>
+    {% else %}
+      <div class="empty-state">还没有聊天记录，发送第一条消息吧。</div>
+    {% endfor %}
+  </div>
+  <form class="chat-form" method="post">
+    <textarea name="content" rows="3" placeholder="输入文字消息..." required></textarea>
+    <button class="btn primary" type="submit">发送</button>
+  </form>
+</section>
+{% endblock %}

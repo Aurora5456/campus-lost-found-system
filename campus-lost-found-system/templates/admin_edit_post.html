@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}管理员编辑帖子{% endblock %}
+{% block content %}
+<section class="form-page">
+  <div>
+    <p class="eyebrow">Admin Edit</p>
+    <h1>管理员编辑帖子</h1>
+    <p>发布人：{{ post.student.name }}（{{ post.student.student_no }}）</p>
+  </div>
+  <form class="panel form-card" method="post" enctype="multipart/form-data">
+    {% include "_post_fields.html" %}
+    <div class="action-row">
+      <button class="btn dark" type="submit">保存后台修改</button>
+      <a class="btn ghost" href="{{ url_for('admin_posts') }}">返回后台</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

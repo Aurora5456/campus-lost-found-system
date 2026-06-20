@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}帖子列表 - 校园失物招领系统{% endblock %}
+{% block content %}
+<section class="app-hero">
+  <div>
+    <p class="eyebrow">Campus Board</p>
+    <h1>你好，{{ current_student.name }}。今天也许就能找回那件小物。</h1>
+    <p>用关键词搜索物品、地点或描述，也可以直接发布新的失物招领信息。</p>
+  </div>
+  <div class="hero-actions">
+    <a class="btn primary" href="{{ url_for('create_post') }}">发布帖子</a>
+    <a class="btn ghost" href="{{ url_for('messages') }}">查看私信</a>
+  </div>
+</section>
+
+<section class="dashboard-grid">
+  <div class="metric-card">
+    <span>全部帖子</span>
+    <strong>{{ stats.total }}</strong>
+  </div>
+  <div class="metric-card">
+    <span>失物信息</span>
+    <strong>{{ stats.lost }}</strong>
+  </div>
+  <div class="metric-card">
+    <span>招领信息</span>
+    <strong>{{ stats.found }}</strong>
+  </div>
+  <div class="metric-card highlight">
+    <span>未读私信</span>
+    <strong>{{ stats.unread }}</strong>
+  </div>
+</section>
+
+<section class="board-layout">
+  <aside class="side-panel">
+    <h3>快速操作</h3>
+    <a href="{{ url_for('create_post') }}">发布新的失物招领</a>
+    <a href="{{ url_for('my_posts') }}">管理我的帖子</a>
+    <a href="{{ url_for('messages') }}">查看站内私信</a>
+    <div class="side-note">
+      <strong>最近招领</strong>
+      {% for item in latest_found %}
+        <p>{{ item.item_name }} · {{ item.location }}</p>
+      {% else %}
+        <p>暂无招领信息</p>
+      {% endfor %}
+    </div>
+  </aside>
+
+  <div class="board-main">
+    <form class="search-bar elevated" method="get">
+      <input name="q" value="{{ keyword }}" placeholder="搜索标题、物品名称、描述或地点">
+      <button class="btn primary" type="submit">搜索</button>
+      {% if keyword %}<a class="btn ghost" href="{{ url_for('student_home') }}">清空</a>{% endif %}
+    </form>
+
+    <section class="post-grid modern-post-grid">
+      {% for post in posts %}
+        <article class="post-card">
+          <a href="{{ url_for('post_detail', post_id=post.id) }}" class="image-frame">
+            {% if post.image_path %}
+              <img src="{{ url_for('static', filename=post.image_path) }}" alt="{{ post.item_name }}">
+            {% else %}
+              <div class="image-placeholder">{{ post.type_label }}</div>
+            {% endif %}
+          </a>
+          <div class="card-body">
+            <div class="card-topline">
+              <span class="badge {{ post.post_type }}">{{ post.type_label }}</span>
+              <span class="meta">{{ post.created_at.strftime('%m-%d %H:%M') }}</span>
+            </div>
+            <h3><a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a></h3>
+            <p class="meta">{{ post.item_name }} · {{ post.location }}</p>
+            <p>{{ post.description[:68] }}{% if post.description|length > 68 %}...{% endif %}</p>
+            <div class="card-footer">
+              <span>{{ post.student.name }} · {{ post.student.student_no }}</span>
+              <a href="{{ url_for('post_detail', post_id=post.id) }}">查看详情</a>
+            </div>
+          </div>
+        </article>
+      {% else %}
+        <div class="empty-state">暂无帖子，试试发布第一条失物招领信息。</div>
+      {% endfor %}
+    </section>
+  </div>
+</section>
+{% endblock %}

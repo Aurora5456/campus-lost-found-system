@@ -1,0 +1,29 @@
+<label>标题
+  <input name="title" value="{{ post.title if post else '' }}" placeholder="例如 图书馆遗失黑色保温杯" required>
+</label>
+<div class="form-grid">
+  <label>物品名称
+    <input name="item_name" value="{{ post.item_name if post else '' }}" placeholder="黑色保温杯" required>
+  </label>
+  <label>帖子类型
+    <select name="post_type" required>
+      <option value="lost" {% if post and post.post_type == 'lost' %}selected{% endif %}>失物</option>
+      <option value="found" {% if post and post.post_type == 'found' %}selected{% endif %}>招领</option>
+    </select>
+  </label>
+</div>
+<label>地点
+  <input name="location" value="{{ post.location if post else '' }}" placeholder="丢失或拾取地点" required>
+</label>
+<label>物品描述
+  <textarea name="description" rows="5" placeholder="描述颜色、特征、时间等信息" required>{{ post.description if post else '' }}</textarea>
+</label>
+<label>联系说明
+  <input name="contact_note" value="{{ post.contact_note if post else '' }}" placeholder="例如 请通过站内私信联系" required>
+</label>
+<label>图片上传
+  <input name="image" type="file" accept=".jpg,.jpeg,.png,.gif">
+</label>
+{% if post and post.image_path %}
+  <p class="muted">当前图片：{{ post.image_path }}。重新上传会替换图片。</p>
+{% endif %}

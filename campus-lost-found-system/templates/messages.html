@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}我的私信 - 校园失物招领系统{% endblock %}
+{% block content %}
+<section class="section-head">
+  <div>
+    <p class="eyebrow">Messages</p>
+    <h1>我的私信</h1>
+  </div>
+</section>
+<section class="list-panel">
+  {% for thread in threads %}
+    <a class="row-card message-row" href="{{ url_for('chat', post_id=thread.post.id, other_id=thread.other.id) }}">
+      <div>
+        <h3>{{ thread.other.name }} · {{ thread.post.title }}</h3>
+        <p class="meta">关联帖子：{{ thread.post.item_name }} / {{ thread.post.type_label }}</p>
+        <p>{{ thread.message.content[:80] }}{% if thread.message.content|length > 80 %}...{% endif %}</p>
+      </div>
+      <span class="meta">{{ thread.message.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+    </a>
+  {% else %}
+    <div class="empty-state">暂无私信。你可以从帖子详情页联系发布人。</div>
+  {% endfor %}
+</section>
+{% endblock %}

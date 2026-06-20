@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}校园失物招领系统{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% if current_admin %}admin-shell{% else %}student-shell{% endif %}">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">寻</span>
+      <div>
+        <strong>{% if current_admin %}管理员后台{% else %}校园失物招领系统{% endif %}</strong>
+        <small>{% if current_admin %}帖子审核与管理{% else %}Campus Lost & Found{% endif %}</small>
+      </div>
+    </div>
+    <nav class="nav">
+      {% if current_student %}
+        <a href="{{ url_for('student_home') }}">首页</a>
+        <a href="{{ url_for('create_post') }}">发布帖子</a>
+        <a href="{{ url_for('my_posts') }}">我的帖子</a>
+        <a href="{{ url_for('messages') }}">我的私信</a>
+        <a href="{{ url_for('logout') }}">退出</a>
+      {% elif current_admin %}
+        <a href="{{ url_for('admin_posts') }}">帖子管理</a>
+        <a href="{{ url_for('logout') }}">退出</a>
+      {% else %}
+        <a href="{{ url_for('student_login') }}">学生登录</a>
+        <a href="{{ url_for('admin_login') }}">管理员登录</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="page">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

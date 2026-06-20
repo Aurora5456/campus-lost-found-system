@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{% if action == 'edit' %}编辑帖子{% else %}发布帖子{% endif %} - 校园失物招领系统{% endblock %}
+{% block content %}
+<section class="form-page">
+  <div>
+    <p class="eyebrow">Post Editor</p>
+    <h1>{% if action == 'edit' %}编辑帖子{% else %}发布失物招领帖子{% endif %}</h1>
+    <p>请填写清晰的物品信息和地点，图片会帮助同学更快确认线索。</p>
+  </div>
+  <form class="panel form-card" method="post" enctype="multipart/form-data">
+    {% include "_post_fields.html" %}
+    <div class="action-row">
+      <button class="btn primary" type="submit">{% if action == 'edit' %}保存修改{% else %}发布帖子{% endif %}</button>
+      <a class="btn ghost" href="{{ url_for('student_home') }}">取消</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

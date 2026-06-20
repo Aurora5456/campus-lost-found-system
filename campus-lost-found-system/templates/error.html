@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} - 校园失物招领系统{% endblock %}
+{% block content %}
+<section class="panel error-panel">
+  <p class="eyebrow">Error {{ code }}</p>
+  <h1>{{ message }}</h1>
+  <div class="action-row">
+    <a class="btn primary" href="{{ url_for('student_login') }}">学生登录</a>
+    <a class="btn ghost" href="{{ url_for('admin_login') }}">管理员登录</a>
+  </div>
+</section>
+{% endblock %}

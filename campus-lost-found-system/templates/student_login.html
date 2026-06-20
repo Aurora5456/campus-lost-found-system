@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}学生登录 - 校园失物招领系统{% endblock %}
+{% block content %}
+<section class="auth-modern">
+  <div class="auth-visual">
+    <p class="eyebrow">Student Portal</p>
+    <h1>校园物品线索，集中发布与联系。</h1>
+    <p>发布失物、查看招领、站内私信联系发布人，让每一条线索都能被及时看见。</p>
+    <div class="device-showcase" aria-label="常见失物展示">
+      <figure class="device-card device-card-large">
+        <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=640&q=82" alt="平板设备">
+        <figcaption>平板</figcaption>
+      </figure>
+      <figure class="device-card device-card-phone">
+        <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=420&q=82" alt="手机设备">
+        <figcaption>手机</figcaption>
+      </figure>
+      <figure class="device-card device-card-small">
+        <img src="https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=420&q=82" alt="耳机设备">
+        <figcaption>耳机</figcaption>
+      </figure>
+    </div>
+  </div>
+  <form class="panel auth-card modern-card" method="post">
+    <div class="welcome-drop">您好，欢迎登录</div>
+    <p class="eyebrow">Sign in</p>
+    <h2>学生登录</h2>
+    <p class="form-note">请输入学校分配的学号和密码。</p>
+    <label>学号
+      <input name="student_no" placeholder="例如 20230001" required>
+    </label>
+    <label>密码
+      <input name="password" type="password" placeholder="请输入密码" required>
+    </label>
+    <button class="btn primary wide" type="submit">进入学生端</button>
+    <a class="text-link" href="{{ url_for('admin_login') }}">管理员入口</a>
+  </form>
+</section>
+{% endblock %}
