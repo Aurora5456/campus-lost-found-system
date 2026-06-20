@@ -7,6 +7,8 @@ __pycache__/
 instance/
 *.db
 .data/
+var/
+var_test/
 
 # 用户上传的图片（保留目录由程序自动创建）
 static/uploads/
