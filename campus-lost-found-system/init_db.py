@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash
 
 from app import create_app
 from config import Config
-from models import Admin, Post, Student, db
+from models import Admin, Announcement, Post, Student, db
 
 
 def ensure_database_exists():
@@ -48,6 +48,17 @@ def seed_students():
 def seed_admins():
     if not Admin.query.filter_by(username="admin").first():
         db.session.add(Admin(username="admin", password_hash=generate_password_hash("admin123")))
+
+
+def seed_announcements():
+    if Announcement.query.count() > 0:
+        return
+    db.session.add(
+        Announcement(
+            title="欢迎使用校园失物招领系统",
+            body="发布帖子时标题会自动识别物品和地点；捡到/丢失物品请如实填写，文明使用站内私信。",
+        )
+    )
 
 
 def seed_posts():
@@ -131,6 +142,7 @@ def main():
         seed_admins()
         db.session.commit()
         seed_posts()
+        seed_announcements()
         db.session.commit()
         print("数据库初始化完成：已创建表、测试账号和示例帖子。")
 

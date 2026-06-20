@@ -25,6 +25,9 @@
         <a href="{{ url_for('logout') }}">退出</a>
       {% elif current_admin %}
         <a href="{{ url_for('admin_posts') }}">帖子管理</a>
+        <a href="{{ url_for('admin_students') }}">用户管理</a>
+        <a href="{{ url_for('admin_messages') }}">私信监管</a>
+        <a href="{{ url_for('admin_announcements') }}">公告</a>
         <a href="{{ url_for('admin_dashboard') }}">数据看板</a>
         <a href="{{ url_for('logout') }}">退出</a>
       {% else %}
@@ -45,6 +48,16 @@
         </section>
       {% endif %}
     {% endwith %}
+    {% if current_student and announcements %}
+      <section class="announce-stack">
+        {% for ann in announcements %}
+          <div class="announce-card">
+            <strong>📢 {{ ann.title }}</strong>
+            <p>{{ ann.body }}</p>
+          </div>
+        {% endfor %}
+      </section>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 

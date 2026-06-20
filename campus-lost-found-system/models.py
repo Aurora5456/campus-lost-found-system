@@ -17,6 +17,7 @@ class Student(db.Model):
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), nullable=True, index=True)
     notify_email = db.Column(db.Boolean, nullable=False, default=True)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     posts = db.relationship("Post", back_populates="student", cascade="all, delete-orphan")
@@ -120,6 +121,16 @@ class Message(db.Model):
     sender = db.relationship("Student", foreign_keys=[sender_id])
     receiver = db.relationship("Student", foreign_keys=[receiver_id])
     post = db.relationship("Post", back_populates="messages")
+
+
+class Announcement(db.Model):
+    __tablename__ = "announcements"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(160), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    is_active = db.Column(db.Boolean, nullable=False, default=True, index=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
 class PasswordResetToken(db.Model):

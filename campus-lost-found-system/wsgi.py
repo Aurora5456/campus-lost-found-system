@@ -17,7 +17,12 @@ os.makedirs(DB_DIR, exist_ok=True)
 os.environ.setdefault("DATABASE_URL", f"sqlite:///{os.path.join(DB_DIR, 'app.db')}")
 
 from app import app  # noqa: E402
-from init_db import seed_admins, seed_posts, seed_students  # noqa: E402
+from init_db import (  # noqa: E402
+    seed_admins,
+    seed_announcements,
+    seed_posts,
+    seed_students,
+)
 from models import db  # noqa: E402
 
 with app.app_context():
@@ -26,4 +31,5 @@ with app.app_context():
     seed_admins()
     db.session.commit()
     seed_posts()
+    seed_announcements()
     db.session.commit()

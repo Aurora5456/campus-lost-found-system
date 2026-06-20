@@ -46,10 +46,19 @@
   <button class="btn dark" type="submit">筛选</button>
   {% if filters.q or filters.type or filters.category or filters.status %}<a class="btn ghost" href="{{ url_for('admin_posts') }}">清空</a>{% endif %}
 </form>
+
+<form id="bulkForm" class="bulk-bar" method="post" action="{{ url_for('admin_bulk_posts') }}" data-confirm="确认对所勾选的帖子执行批量操作吗？">
+  <span>批量操作（勾选下方帖子后选择）：</span>
+  <button class="btn dark small" type="submit" name="action" value="resolve">标记已解决</button>
+  <button class="btn secondary small" type="submit" name="action" value="reopen">重新打开</button>
+  <button class="btn danger small" type="submit" name="action" value="delete">批量删除</button>
+</form>
+
 <section class="panel table-panel">
   <table>
     <thead>
       <tr>
+        <th><input type="checkbox" data-check-all="post_ids"></th>
         <th>类型</th>
         <th>分类</th>
         <th>状态</th>
@@ -64,6 +73,7 @@
     <tbody>
       {% for post in posts %}
         <tr>
+          <td><input type="checkbox" name="post_ids" value="{{ post.id }}" form="bulkForm"></td>
           <td><span class="badge {{ post.post_type }}">{{ post.type_label }}</span></td>
           <td>{{ post.category_label }}</td>
           <td><span class="badge status {% if post.is_resolved %}resolved{% else %}open{% endif %}">{{ post.status_label }}</span></td>
@@ -74,13 +84,22 @@
           <td>{{ post.created_at.strftime('%Y-%m-%d') }}</td>
           <td class="table-actions">
             <a class="btn secondary small" href="{{ url_for('admin_edit_post', post_id=post.id) }}">编辑</a>
+            <form method="post" action="{{ url_for('admin_update_status', post_id=post.id) }}">
+              {% if post.is_resolved %}
+                <input type="hidden" name="status" value="open">
+                <button class="btn ghost small" type="submit">重新打开</button>
+              {% else %}
+                <input type="hidden" name="status" value="resolved">
+                <button class="btn dark small" type="submit">标记已解决</button>
+              {% endif %}
+            </form>
             <form method="post" action="{{ url_for('admin_delete_post', post_id=post.id) }}" data-confirm="确认由管理员删除这条帖子吗？">
               <button class="btn danger small" type="submit">删除</button>
             </form>
           </td>
         </tr>
       {% else %}
-        <tr><td colspan="9" class="empty-cell">暂无帖子</td></tr>
+        <tr><td colspan="10" class="empty-cell">暂无帖子</td></tr>
       {% endfor %}
     </tbody>
   </table>

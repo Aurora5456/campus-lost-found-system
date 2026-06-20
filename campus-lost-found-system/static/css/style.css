@@ -1200,3 +1200,65 @@ th {
     grid-template-columns: 1fr;
   }
 }
+
+.announce-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.announce-card {
+  border: 1px solid #f0d9a8;
+  background: #fff8e8;
+  border-left: 4px solid #e0a526;
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.announce-card strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #8a5a00;
+}
+
+.announce-card p {
+  margin: 0;
+  color: #5b4a2a;
+  white-space: pre-wrap;
+}
+
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.bulk-bar > span {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.mini-input {
+  width: 120px;
+  padding: 4px 8px;
+  border: 1px solid #d4d4d8;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-actions form {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}

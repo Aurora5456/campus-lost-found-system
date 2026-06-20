@@ -1,5 +1,6 @@
 import os
 from functools import wraps
+from secrets import token_urlsafe
 
 from flask import (
     Flask,
@@ -27,6 +28,7 @@ from imaging import remove_image_files, save_images
 from matching import find_matches
 from models import (
     Admin,
+    Announcement,
     Message,
     PasswordResetToken,
     Post,
@@ -69,6 +71,11 @@ def student_required(view):
     def wrapper(*args, **kwargs):
         if not session.get("student_id"):
             flash("请先登录学生账号。", "warning")
+            return redirect(url_for("student_login"))
+        student = current_student()
+        if student is None or not student.is_active:
+            session.clear()
+            flash("账号不存在或已被封禁，请联系管理员。", "danger")
             return redirect(url_for("student_login"))
         return view(*args, **kwargs)
 
@@ -176,11 +183,19 @@ def register_routes(app):
             unread_count = Message.query.filter_by(
                 receiver_id=student.id, is_read=False
             ).count()
+        announcements = []
+        if student:
+            announcements = (
+                Announcement.query.filter_by(is_active=True)
+                .order_by(Announcement.created_at.desc())
+                .all()
+            )
         return {
             "current_student": student,
             "current_admin": current_admin(),
             "unread_count": unread_count,
             "categories": CATEGORIES,
+            "announcements": announcements,
         }
 
     @app.route("/")
@@ -201,6 +216,9 @@ def register_routes(app):
             password = request.form.get("password", "")
             student = Student.query.filter_by(student_no=student_no).first()
             if student and check_password_hash(student.password_hash, password):
+                if not student.is_active:
+                    flash("该账号已被管理员封禁，无法登录。", "danger")
+                    return render_template("student_login.html")
                 session.clear()
                 session["student_id"] = student.id
                 flash("登录成功，欢迎回来。", "success")
@@ -605,6 +623,184 @@ def register_routes(app):
         db.session.commit()
         flash("管理员已删除帖子，相关图片和私信记录已同步清理。", "success")
         return redirect(url_for("admin_posts"))
+
+    @app.route("/admin/posts/<int:post_id>/status", methods=["POST"])
+    @admin_required
+    def admin_update_status(post_id):
+        post = Post.query.get_or_404(post_id)
+        new_status = request.form.get("status", "")
+        if new_status in STATUS_KEYS:
+            post.status = new_status
+            db.session.commit()
+            flash("已将帖子状态更新为「%s」。" % post.status_label, "success")
+        else:
+            flash("状态值不正确。", "danger")
+        return redirect(request.referrer or url_for("admin_posts"))
+
+    @app.route("/admin/posts/bulk", methods=["POST"])
+    @admin_required
+    def admin_bulk_posts():
+        action = request.form.get("action", "")
+        ids = [int(x) for x in request.form.getlist("post_ids") if x.isdigit()]
+        if not ids:
+            flash("请先勾选要操作的帖子。", "warning")
+            return redirect(request.referrer or url_for("admin_posts"))
+
+        posts = Post.query.filter(Post.id.in_(ids)).all()
+        if action == "delete":
+            for post in posts:
+                for image in post.images:
+                    remove_image_files(image.image_path, image.thumb_path)
+                db.session.delete(post)
+            db.session.commit()
+            flash("已批量删除 %d 条帖子。" % len(posts), "success")
+        elif action in {"resolve", "reopen"}:
+            target = STATUS_RESOLVED if action == "resolve" else STATUS_OPEN
+            for post in posts:
+                post.status = target
+            db.session.commit()
+            label = "已解决" if action == "resolve" else "未解决"
+            flash("已批量将 %d 条帖子标记为「%s」。" % (len(posts), label), "success")
+        else:
+            flash("未知的批量操作。", "danger")
+        return redirect(request.referrer or url_for("admin_posts"))
+
+    @app.route("/admin/students")
+    @admin_required
+    def admin_students():
+        keyword = request.args.get("q", "").strip()
+        query = Student.query.order_by(Student.created_at.desc())
+        if keyword:
+            like = f"%{keyword}%"
+            query = query.filter(
+                or_(
+                    Student.name.like(like),
+                    Student.student_no.like(like),
+                    Student.email.like(like),
+                )
+            )
+        page = request.args.get("page", 1, type=int)
+        pagination = query.paginate(page=page, per_page=15, error_out=False)
+        post_counts = dict(
+            db.session.query(Post.student_id, db.func.count(Post.id))
+            .group_by(Post.student_id)
+            .all()
+        )
+        return render_template(
+            "admin_students.html",
+            students=pagination.items,
+            pagination=pagination,
+            keyword=keyword,
+            filters={"q": keyword},
+            post_counts=post_counts,
+        )
+
+    @app.route("/admin/students/<int:student_id>/toggle-active", methods=["POST"])
+    @admin_required
+    def admin_toggle_student(student_id):
+        student = Student.query.get_or_404(student_id)
+        student.is_active = not student.is_active
+        db.session.commit()
+        state = "解封" if student.is_active else "封禁"
+        flash("已%s学生「%s（%s）」。" % (state, student.name, student.student_no), "success")
+        return redirect(request.referrer or url_for("admin_students"))
+
+    @app.route("/admin/students/<int:student_id>/reset-password", methods=["POST"])
+    @admin_required
+    def admin_reset_student_password(student_id):
+        student = Student.query.get_or_404(student_id)
+        new_password = request.form.get("new_password", "").strip()
+        if not new_password:
+            new_password = token_urlsafe(6)
+        elif len(new_password) < 6:
+            flash("新密码至少 6 位。", "danger")
+            return redirect(request.referrer or url_for("admin_students"))
+        student.password_hash = generate_password_hash(new_password)
+        db.session.commit()
+        flash(
+            "已重置「%s（%s）」的密码为：%s（请尽快告知本人并提醒修改）。"
+            % (student.name, student.student_no, new_password),
+            "success",
+        )
+        return redirect(request.referrer or url_for("admin_students"))
+
+    @app.route("/admin/students/<int:student_id>/delete", methods=["POST"])
+    @admin_required
+    def admin_delete_student(student_id):
+        student = Student.query.get_or_404(student_id)
+        # 删除该学生参与的所有私信（含其作为收件人的会话），避免外键约束失败
+        Message.query.filter(
+            or_(Message.sender_id == student.id, Message.receiver_id == student.id)
+        ).delete(synchronize_session=False)
+        for post in list(student.posts):
+            for image in post.images:
+                remove_image_files(image.image_path, image.thumb_path)
+        name, no = student.name, student.student_no
+        db.session.delete(student)
+        db.session.commit()
+        flash("已删除学生「%s（%s）」及其帖子、私信。" % (name, no), "success")
+        return redirect(url_for("admin_students"))
+
+    @app.route("/admin/announcements", methods=["GET", "POST"])
+    @admin_required
+    def admin_announcements():
+        if request.method == "POST":
+            title = request.form.get("title", "").strip()
+            body = request.form.get("body", "").strip()
+            if not title or not body:
+                flash("请填写公告标题和内容。", "danger")
+            else:
+                db.session.add(Announcement(title=title, body=body))
+                db.session.commit()
+                flash("公告已发布。", "success")
+            return redirect(url_for("admin_announcements"))
+        announcements = Announcement.query.order_by(Announcement.created_at.desc()).all()
+        return render_template("admin_announcements.html", announcements=announcements)
+
+    @app.route("/admin/announcements/<int:ann_id>/toggle", methods=["POST"])
+    @admin_required
+    def admin_toggle_announcement(ann_id):
+        ann = Announcement.query.get_or_404(ann_id)
+        ann.is_active = not ann.is_active
+        db.session.commit()
+        flash("公告已%s。" % ("上线" if ann.is_active else "下线"), "success")
+        return redirect(url_for("admin_announcements"))
+
+    @app.route("/admin/announcements/<int:ann_id>/delete", methods=["POST"])
+    @admin_required
+    def admin_delete_announcement(ann_id):
+        ann = Announcement.query.get_or_404(ann_id)
+        db.session.delete(ann)
+        db.session.commit()
+        flash("公告已删除。", "success")
+        return redirect(url_for("admin_announcements"))
+
+    @app.route("/admin/messages")
+    @admin_required
+    def admin_messages():
+        keyword = request.args.get("q", "").strip()
+        query = Message.query.order_by(Message.created_at.desc())
+        if keyword:
+            like = f"%{keyword}%"
+            query = query.filter(Message.content.like(like))
+        page = request.args.get("page", 1, type=int)
+        pagination = query.paginate(page=page, per_page=20, error_out=False)
+        return render_template(
+            "admin_messages.html",
+            messages=pagination.items,
+            pagination=pagination,
+            keyword=keyword,
+            filters={"q": keyword},
+        )
+
+    @app.route("/admin/messages/<int:message_id>/delete", methods=["POST"])
+    @admin_required
+    def admin_delete_message(message_id):
+        message = Message.query.get_or_404(message_id)
+        db.session.delete(message)
+        db.session.commit()
+        flash("已删除该条私信。", "success")
+        return redirect(request.referrer or url_for("admin_messages"))
 
 
 def build_dashboard_data():

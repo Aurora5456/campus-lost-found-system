@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS password_reset_tokens;
 DROP TABLE IF EXISTS messages;
 DROP TABLE IF EXISTS post_images;
 DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS announcements;
 DROP TABLE IF EXISTS admins;
 DROP TABLE IF EXISTS students;
 
@@ -18,6 +19,7 @@ CREATE TABLE students (
   name VARCHAR(80) NOT NULL,
   email VARCHAR(120),
   notify_email BOOLEAN NOT NULL DEFAULT TRUE,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -65,6 +67,14 @@ CREATE TABLE messages (
   CONSTRAINT fk_messages_sender FOREIGN KEY (sender_id) REFERENCES students(id) ON DELETE CASCADE,
   CONSTRAINT fk_messages_receiver FOREIGN KEY (receiver_id) REFERENCES students(id) ON DELETE CASCADE,
   CONSTRAINT fk_messages_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE announcements (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(160) NOT NULL,
+  body TEXT NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE password_reset_tokens (

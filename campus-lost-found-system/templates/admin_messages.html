@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}管理员后台 - 私信监管{% endblock %}
+{% block content %}
+<section class="section-head">
+  <div>
+    <p class="eyebrow">Admin Console</p>
+    <h1>私信监管</h1>
+  </div>
+</section>
+<form class="search-bar admin-search" method="get">
+  <input name="q" value="{{ keyword }}" placeholder="按私信内容搜索">
+  <button class="btn dark" type="submit">搜索</button>
+  {% if keyword %}<a class="btn ghost" href="{{ url_for('admin_messages') }}">清空</a>{% endif %}
+</form>
+<section class="panel table-panel">
+  <table>
+    <thead>
+      <tr>
+        <th>时间</th>
+        <th>发件人</th>
+        <th>收件人</th>
+        <th>关联帖子</th>
+        <th>内容</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for msg in messages %}
+        <tr>
+          <td>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>{{ msg.sender.name }} / {{ msg.sender.student_no }}</td>
+          <td>{{ msg.receiver.name }} / {{ msg.receiver.student_no }}</td>
+          <td>{{ msg.post.title }}</td>
+          <td>{{ msg.content }}</td>
+          <td class="table-actions">
+            <form method="post" action="{{ url_for('admin_delete_message', message_id=msg.id) }}" data-confirm="确认删除这条私信吗？">
+              <button class="btn danger small" type="submit">删除</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="empty-cell">暂无私信</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% include "_pagination.html" %}
+{% endblock %}

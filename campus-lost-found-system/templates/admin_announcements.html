@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}管理员后台 - 公告{% endblock %}
+{% block content %}
+<section class="section-head">
+  <div>
+    <p class="eyebrow">Admin Console</p>
+    <h1>全站公告</h1>
+  </div>
+</section>
+<section class="panel form-panel">
+  <h3>发布新公告</h3>
+  <form method="post" action="{{ url_for('admin_announcements') }}">
+    <label>
+      标题
+      <input name="title" placeholder="例如 期末失物招领集中认领通知" required>
+    </label>
+    <label>
+      内容
+      <textarea name="body" rows="3" placeholder="公告正文，会显示在学生端每个页面顶部" required></textarea>
+    </label>
+    <div class="action-row">
+      <button class="btn primary" type="submit">发布公告</button>
+    </div>
+  </form>
+</section>
+<section class="panel table-panel">
+  <table>
+    <thead>
+      <tr>
+        <th>标题</th>
+        <th>内容</th>
+        <th>状态</th>
+        <th>发布时间</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ann in announcements %}
+        <tr>
+          <td>{{ ann.title }}</td>
+          <td>{{ ann.body }}</td>
+          <td>
+            {% if ann.is_active %}
+              <span class="badge status open">显示中</span>
+            {% else %}
+              <span class="badge status resolved">已下线</span>
+            {% endif %}
+          </td>
+          <td>{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td class="table-actions">
+            <form method="post" action="{{ url_for('admin_toggle_announcement', ann_id=ann.id) }}">
+              <button class="btn ghost small" type="submit">{% if ann.is_active %}下线{% else %}上线{% endif %}</button>
+            </form>
+            <form method="post" action="{{ url_for('admin_delete_announcement', ann_id=ann.id) }}" data-confirm="确认删除这条公告吗？">
+              <button class="btn danger small" type="submit">删除</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="empty-cell">暂无公告</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
