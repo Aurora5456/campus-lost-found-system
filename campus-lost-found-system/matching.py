@@ -29,29 +29,46 @@ def _tokens(text):
     return tokens
 
 
-def _overlap(a, b):
+def _jaccard(a, b):
     if not a or not b:
-        return 0
-    return len(a & b)
+        return 0.0
+    union = len(a | b)
+    return len(a & b) / union if union else 0.0
+
+
+# 各维度权重（合计为 1），用于把相似度折算成 0-100% 的匹配度
+_W_CATEGORY = 0.15
+_W_ITEM = 0.40
+_W_LOCATION = 0.25
+_W_TEXT = 0.20
 
 
 def score_match(source, candidate):
-    score = 0
-    if source.category and candidate.category and source.category == candidate.category:
-        score += 3
+    """返回 0-100 的匹配度百分比（各维度相似度按权重相加）。"""
+    category_sim = 1.0 if (
+        source.category
+        and candidate.category
+        and source.category == candidate.category
+    ) else 0.0
 
-    name_tokens_a = _tokens(source.item_name)
-    name_tokens_b = _tokens(candidate.item_name)
-    score += 2 * _overlap(name_tokens_a, name_tokens_b)
+    item_sim = _jaccard(_tokens(source.item_name), _tokens(candidate.item_name))
+    loc_sim = _jaccard(_tokens(source.location), _tokens(candidate.location))
+    text_sim = _jaccard(
+        _tokens(f"{source.title} {source.description}"),
+        _tokens(f"{candidate.title} {candidate.description}"),
+    )
 
-    loc_tokens_a = _tokens(source.location)
-    loc_tokens_b = _tokens(candidate.location)
-    score += 2 * _overlap(loc_tokens_a, loc_tokens_b)
-
-    text_a = _tokens(f"{source.title} {source.description}")
-    text_b = _tokens(f"{candidate.title} {candidate.description}")
-    score += _overlap(text_a, text_b)
-    return score
+    raw = (
+        _W_CATEGORY * category_sim
+        + _W_ITEM * item_sim
+        + _W_LOCATION * loc_sim
+        + _W_TEXT * text_sim
+    )
+    percent = round(raw * 100)
+    # 有任意正向重合但四舍五入为 0 时，至少显示 1%
+    if percent == 0 and raw > 0:
+        percent = 1
+    return percent
 
 
 def find_matches(post, limit=5):
