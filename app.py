@@ -356,6 +356,28 @@ def register_routes(app):
             return redirect(url_for("settings"))
         return render_template("settings.html", student=student)
 
+    @app.route("/student/change-password", methods=["POST"])
+    @student_required
+    def change_password():
+        student = current_student()
+        current_password = request.form.get("current_password", "")
+        new_password = request.form.get("new_password", "")
+        confirm = request.form.get("confirm_password", "")
+
+        if not check_password_hash(student.password_hash, current_password):
+            flash("当前密码不正确。", "danger")
+        elif len(new_password) < 6:
+            flash("新密码至少 6 位。", "danger")
+        elif new_password != confirm:
+            flash("两次输入的新密码不一致。", "danger")
+        elif new_password == current_password:
+            flash("新密码不能与当前密码相同。", "danger")
+        else:
+            student.password_hash = generate_password_hash(new_password)
+            db.session.commit()
+            flash("密码修改成功，下次请使用新密码登录。", "success")
+        return redirect(url_for("settings"))
+
     @app.route("/posts")
     @student_required
     def student_home():
