@@ -183,19 +183,19 @@ def register_routes(app):
             unread_count = Message.query.filter_by(
                 receiver_id=student.id, is_read=False
             ).count()
-        announcements = []
+        latest_announcement = None
         if student:
-            announcements = (
+            latest_announcement = (
                 Announcement.query.filter_by(is_active=True)
                 .order_by(Announcement.created_at.desc())
-                .all()
+                .first()
             )
         return {
             "current_student": student,
             "current_admin": current_admin(),
             "unread_count": unread_count,
             "categories": CATEGORIES,
-            "announcements": announcements,
+            "latest_announcement": latest_announcement,
         }
 
     @app.route("/")
@@ -383,6 +383,16 @@ def register_routes(app):
             stats=stats,
             latest_found=latest_found,
         )
+
+    @app.route("/announcements")
+    @student_required
+    def announcements_page():
+        items = (
+            Announcement.query.filter_by(is_active=True)
+            .order_by(Announcement.created_at.desc())
+            .all()
+        )
+        return render_template("announcements.html", announcements=items)
 
     @app.route("/posts/<int:post_id>")
     @student_required

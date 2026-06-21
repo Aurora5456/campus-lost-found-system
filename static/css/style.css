@@ -1228,6 +1228,50 @@ th {
   white-space: pre-wrap;
 }
 
+.announce-banner {
+  position: relative;
+  margin-bottom: 18px;
+  padding-right: 40px;
+}
+
+.announce-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  color: #b08534;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.announce-close:hover {
+  background: #f3e2bd;
+  color: #8a5a00;
+}
+
+.announce-more {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b07d12;
+  text-decoration: none;
+}
+
+.announce-more:hover {
+  text-decoration: underline;
+}
+
+.announce-time {
+  display: block;
+  margin-top: 8px;
+  color: #9c8a63;
+}
+
 .bulk-bar {
   display: flex;
   align-items: center;
