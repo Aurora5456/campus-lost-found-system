@@ -196,6 +196,7 @@ def register_routes(app):
             "unread_count": unread_count,
             "categories": CATEGORIES,
             "latest_announcement": latest_announcement,
+            "email_enabled": email_enabled(),
         }
 
     @app.route("/")

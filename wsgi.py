@@ -3,8 +3,8 @@
 Start command:  gunicorn wsgi:app --bind 0.0.0.0:$PORT
 
 Uses SQLite under a data directory and seeds demo data on first boot, so the
-app runs with zero external services. Local MySQL development via app.py /
-_run.py is unaffected.
+app runs with zero external services. Local MySQL development via app.py is
+unaffected.
 """
 
 import os

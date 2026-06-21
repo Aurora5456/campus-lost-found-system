@@ -22,7 +22,11 @@
       <input type="checkbox" name="notify_email" {% if student.notify_email %}checked{% endif %}>
       有人给我发私信时通过邮件通知我
     </label>
-    <p class="muted">提示：邮件通知需要管理员在服务器上配置邮件通道（Brevo API 或 SMTP）。未配置时不会发送邮件，但仍可在找回密码页直接获取重置链接。</p>
+    {% if email_enabled %}
+    <p class="muted">提示：系统已开启邮件服务。勾选后，有人给你发私信、或你找回密码时，系统会把通知发送到上面的邮箱。</p>
+    {% else %}
+    <p class="muted">提示：当前服务器未配置邮件通道，暂不会发送邮件；找回密码时仍可在页面直接获取重置链接。</p>
+    {% endif %}
     <div class="action-row">
       <button class="btn primary" type="submit">保存设置</button>
       <a class="btn ghost" href="{{ url_for('student_home') }}">返回</a>
