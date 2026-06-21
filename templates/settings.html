@@ -27,4 +27,20 @@
     <a class="btn ghost" href="{{ url_for('student_home') }}">返回</a>
   </div>
 </form>
+
+<form class="panel form-card" method="post" action="{{ url_for('change_password') }}" style="max-width: 560px; margin-top: 24px;">
+  <h2 style="margin-top: 0;">修改密码</h2>
+  <label>当前密码
+    <input name="current_password" type="password" required placeholder="请输入当前密码">
+  </label>
+  <label>新密码
+    <input name="new_password" type="password" required minlength="6" placeholder="至少 6 位">
+  </label>
+  <label>确认新密码
+    <input name="confirm_password" type="password" required minlength="6" placeholder="再次输入新密码">
+  </label>
+  <div class="action-row">
+    <button class="btn primary" type="submit">修改密码</button>
+  </div>
+</form>
 {% endblock %}
