@@ -592,6 +592,57 @@ def register_routes(app):
         )
         return render_template("chat.html", post=post, other=other, chat_messages=chat_messages)
 
+    @app.route("/chat/<int:post_id>/<int:other_id>/messages.json")
+    @student_required
+    def chat_messages_json(post_id, other_id):
+        student_id = session["student_id"]
+        post = Post.query.get_or_404(post_id)
+        other = Student.query.get_or_404(other_id)
+        if student_id == other_id or post.student_id not in {student_id, other_id}:
+            abort(403)
+
+        Message.query.filter_by(
+            post_id=post.id,
+            sender_id=other.id,
+            receiver_id=student_id,
+            is_read=False,
+        ).update({"is_read": True})
+        db.session.commit()
+
+        after_id = request.args.get("after", 0, type=int)
+        rows = (
+            Message.query.filter(
+                Message.post_id == post.id,
+                Message.id > after_id,
+                or_(
+                    (Message.sender_id == student_id) & (Message.receiver_id == other.id),
+                    (Message.sender_id == other.id) & (Message.receiver_id == student_id),
+                ),
+            )
+            .order_by(Message.id.asc())
+            .all()
+        )
+        return {
+            "messages": [
+                {
+                    "id": msg.id,
+                    "content": msg.content,
+                    "sender_name": msg.sender.name,
+                    "created_at": msg.created_at.strftime("%Y-%m-%d %H:%M"),
+                    "mine": msg.sender_id == student_id,
+                }
+                for msg in rows
+            ]
+        }
+
+    @app.route("/api/unread-count")
+    @student_required
+    def unread_count_api():
+        count = Message.query.filter_by(
+            receiver_id=session["student_id"], is_read=False
+        ).count()
+        return {"unread": count}
+
     @app.route("/contact/<int:post_id>")
     @student_required
     def contact_publisher(post_id):
