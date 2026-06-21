@@ -21,7 +21,7 @@
         <a href="{{ url_for('create_post') }}">发布帖子</a>
         <a href="{{ url_for('my_posts') }}">我的帖子</a>
         <a href="{{ url_for('announcements_page') }}">公告</a>
-        <a class="nav-badge-link" href="{{ url_for('messages') }}">我的私信{% if unread_count %}<span class="nav-badge">{{ unread_count }}</span>{% endif %}</a>
+        <a class="nav-badge-link" data-unread-url="{{ url_for('unread_count_api') }}" href="{{ url_for('messages') }}">我的私信{% if unread_count %}<span class="nav-badge">{{ unread_count }}</span>{% endif %}</a>
         <a href="{{ url_for('settings') }}">设置</a>
         <a href="{{ url_for('logout') }}">退出</a>
       {% elif current_admin %}

@@ -24,6 +24,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  const unreadLink = document.querySelector(".nav-badge-link[data-unread-url]");
+  if (unreadLink) {
+    const refreshUnread = async () => {
+      try {
+        const res = await fetch(unreadLink.dataset.unreadUrl);
+        if (!res.ok) {
+          return;
+        }
+        const data = await res.json();
+        const count = data.unread || 0;
+        let badge = unreadLink.querySelector(".nav-badge");
+        if (count > 0) {
+          if (!badge) {
+            badge = document.createElement("span");
+            badge.className = "nav-badge";
+            unreadLink.appendChild(badge);
+          }
+          badge.textContent = count;
+          badge.style.display = "";
+        } else if (badge) {
+          badge.style.display = "none";
+        }
+      } catch (err) {
+        /* 忽略网络抖动 */
+      }
+    };
+    setInterval(refreshUnread, 10000);
+  }
+
   document.querySelectorAll("input[data-check-all]").forEach((master) => {
     const name = master.getAttribute("data-check-all");
     master.addEventListener("change", () => {
