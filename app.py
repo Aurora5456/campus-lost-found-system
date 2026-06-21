@@ -899,7 +899,7 @@ def register_errors(app):
             render_template(
                 "error.html",
                 code=500,
-                message="MySQL 连接失败，请检查数据库是否启动，以及 config.py 中的账号、密码、库名是否正确。",
+                message="数据库连接失败，请检查数据库是否启动，以及 DATABASE_URL 或 config.py 中的账号、密码、库名是否正确。",
             ),
             500,
         )
