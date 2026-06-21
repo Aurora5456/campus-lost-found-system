@@ -14,51 +14,6 @@
 
 > 免费版闲置约 15 分钟会休眠,首次打开需等约 30–50 秒冷启动。线上数据存于 Render PostgreSQL,**重启/重新部署不会丢失**(种子数据仅在库为空时写入)。
 
-## 快速开始(SQLite,推荐,免装数据库)
-
-最省事的本地运行方式,零外部依赖:
-
-```bash
-# 1. 安装依赖(建议 Python 3.10+)
-pip install -r requirements.txt
-
-# 2. 指向一个 SQLite 文件(文件会自动落到 instance/ 目录并自动创建)
-#    PowerShell:
-$env:DATABASE_URL = "sqlite:///dev.db"
-#    CMD:
-set DATABASE_URL=sqlite:///dev.db
-
-# 3. 初始化数据库(建表 + 写入测试账号与示例数据)
-python init_db.py
-
-# 4. 启动
-python app.py
-```
-
-浏览器访问 <http://127.0.0.1:5000>。
-
-> 注意:SQLite 连接串请用 `sqlite:///dev.db`(不要写成 `sqlite:///instance/dev.db`)。Flask-SQLAlchemy 会把相对路径的 SQLite 文件放到应用的 `instance/` 目录下,多写一层 `instance/` 反而会报 `unable to open database file`。删除生成的 `instance/dev.db` 后重新 `python init_db.py` 即可重置数据。
-
-## 用 MySQL 运行(可选)
-
-不设置 `DATABASE_URL` 时,默认使用 `config.py` 中的 MySQL 配置:
-
-```text
-主机 localhost  端口 3306  库名 lost_found_system  用户 root  密码 123456
-```
-
-若本机 MySQL 账号不同,改 `config.py` 的 `DB_USER`/`DB_PASSWORD`,或设置环境变量 `DB_USER`、`DB_PASSWORD`、`DB_HOST`、`DB_PORT`、`DB_NAME`。然后:
-
-```bash
-# 先在 MySQL 里建库(或执行项目自带的 database.sql)
-CREATE DATABASE lost_found_system DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-python init_db.py   # 建表 + 种子数据
-python app.py
-```
-
-Windows 下也可直接双击 `init_db.bat`(初始化)、`start.bat`(后台启动并打开浏览器)、`stop.bat`(停止)。这些脚本走默认 MySQL 方式;用 SQLite 请按上面的「快速开始」手动设环境变量后运行。
-
 ## 邮件通知(可选)
 
 系统在「有人发来私信」或「学生找回密码」时可发邮件。支持两条通道,**都没配置时自动降级**(私信只走站内未读提醒、找回密码直接在页面给出重置链接),不会报错:
@@ -150,6 +105,52 @@ templates/        Jinja2 模板    static/  CSS/JS/上传图片
 render.yaml       Render 一键部署蓝图(含 free 计划 PostgreSQL)
 *.bat / start.ps1 Windows 本地初始化/启动/停止脚本(默认 MySQL)
 ```
+
+## 本地运行
+
+需要 **Python 3.11+**。先安装依赖:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 方式一:SQLite(推荐,免装数据库)
+
+零外部依赖,三步跑起来:
+
+```bash
+# 1. 指向一个 SQLite 文件(PowerShell 用 $env:,CMD 用 set)
+$env:DATABASE_URL = "sqlite:///dev.db"      # PowerShell
+set DATABASE_URL=sqlite:///dev.db           # CMD
+
+# 2. 初始化数据库(建表 + 写入测试账号与示例数据)
+python init_db.py
+
+# 3. 启动,浏览器访问 http://127.0.0.1:5000
+python app.py
+```
+
+> 注意:SQLite 连接串请用 `sqlite:///dev.db`,**不要**写成 `sqlite:///instance/dev.db`。Flask-SQLAlchemy 会把相对路径的 SQLite 文件放到应用的 `instance/` 目录下,多写一层 `instance/` 反而会报 `unable to open database file`。删除生成的 `instance/dev.db` 后重新 `python init_db.py` 即可重置数据。
+
+### 方式二:MySQL(可选)
+
+不设置 `DATABASE_URL` 时,默认使用 `config.py` 中的 MySQL 配置:
+
+```text
+主机 localhost  端口 3306  库名 lost_found_system  用户 root  密码 123456
+```
+
+若本机 MySQL 账号不同,改 `config.py` 的 `DB_USER`/`DB_PASSWORD`,或设置环境变量 `DB_USER`、`DB_PASSWORD`、`DB_HOST`、`DB_PORT`、`DB_NAME`。然后:
+
+```bash
+# 先在 MySQL 里建库(或执行项目自带的 database.sql)
+CREATE DATABASE lost_found_system DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+python init_db.py   # 建表 + 种子数据
+python app.py
+```
+
+Windows 下也可直接双击 `init_db.bat`(初始化)、`start.bat`(后台启动并打开浏览器)、`stop.bat`(停止)。这些脚本走默认 MySQL 方式;用 SQLite 请按上面的方式一手动设环境变量后运行。
 
 ## 部署(Render / 任意 WSGI 平台)
 
