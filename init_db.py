@@ -215,9 +215,9 @@ def main():
         try:
             db.session.execute(text("SELECT 1"))
         except OperationalError as exc:
-            print("MySQL 连接失败，请确认数据库已创建并已启动。")
-            print("默认数据库：lost_found_system，默认账号：root，默认密码：123456。")
-            print("如果你的 MySQL 密码不同，请修改 config.py 或设置环境变量。")
+            print("数据库连接失败，请确认数据库已创建并已启动。")
+            print("使用 MySQL 时默认库 lost_found_system / 账号 root / 密码 123456，可在 config.py 或环境变量中修改。")
+            print("使用 SQLite 时请设置 DATABASE_URL=sqlite:///dev.db。")
             raise exc
 
         db.drop_all()
