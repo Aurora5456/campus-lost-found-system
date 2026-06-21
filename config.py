@@ -42,10 +42,19 @@ class Config:
     # 站点外链地址，用于在邮件里拼接找回密码、私信等链接
     SITE_BASE_URL = os.environ.get("SITE_BASE_URL", "http://127.0.0.1:5000")
 
-    # 邮件通知（SMTP）。未配置 SMTP_HOST 时自动降级为站内通知，不会报错。
+    # 邮件通知。优先用 Brevo HTTP API（走 443 端口，免费托管平台通常放行）；
+    # 否则退回 SMTP。两者都没配置时自动降级为站内通知，不会报错。
+    MAIL_FROM = os.environ.get("MAIL_FROM", "校园失物招领系统 <no-reply@campus.local>")
+
+    # Brevo（Sendinblue）事务邮件 HTTP API
+    BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+    # 发件人邮箱必须在 Brevo 后台「Senders」里验证过；默认从 MAIL_FROM 解析
+    BREVO_SENDER_EMAIL = os.environ.get("BREVO_SENDER_EMAIL", "")
+    BREVO_SENDER_NAME = os.environ.get("BREVO_SENDER_NAME", "校园失物招领系统")
+
+    # SMTP（备用通道，免费托管平台可能屏蔽出站 SMTP 端口）
     SMTP_HOST = os.environ.get("SMTP_HOST", "")
     SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
     SMTP_USER = os.environ.get("SMTP_USER", "")
     SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
     SMTP_USE_TLS = os.environ.get("SMTP_USE_TLS", "true").lower() == "true"
-    MAIL_FROM = os.environ.get("MAIL_FROM", "校园失物招领系统 <no-reply@campus.local>")

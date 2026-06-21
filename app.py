@@ -36,7 +36,7 @@ from models import (
     Student,
     db,
 )
-from notifications import notify_new_message, notify_password_reset
+from notifications import email_enabled, notify_new_message, notify_password_reset
 
 PER_PAGE = 9
 
@@ -286,9 +286,12 @@ def register_routes(app):
             if sent:
                 flash("重置链接已发送到你的邮箱，请在 30 分钟内完成重置。", "success")
                 return render_template("forgot_password.html")
-            # 未配置邮件时，直接在页面给出重置链接，方便本地演示
+            # 邮件未启用或发送失败时，直接在页面给出重置链接作为兜底
             reset_link = url_for("reset_password", token=reset.token)
-            flash("邮件服务未配置，请使用下方链接重置密码（30 分钟内有效）。", "info")
+            if email_enabled():
+                flash("邮件暂时发送失败，请使用下方链接重置密码（30 分钟内有效）。", "info")
+            else:
+                flash("邮件服务未启用，请使用下方链接重置密码（30 分钟内有效）。", "info")
             return render_template("forgot_password.html", reset_link=reset_link)
         return render_template("forgot_password.html")
 

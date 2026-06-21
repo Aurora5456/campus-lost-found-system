@@ -5,31 +5,89 @@
 短信通知需要第三方服务商（阿里云短信、Twilio 等），可在 send_sms 中接入。
 """
 
+import json
 import smtplib
+import urllib.error
+import urllib.request
 from email.message import EmailMessage
+from email.utils import parseaddr
 
 from flask import current_app, url_for
 
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
-def email_enabled():
+
+def brevo_enabled():
+    return bool(current_app.config.get("BREVO_API_KEY"))
+
+
+def smtp_enabled():
     return bool(current_app.config.get("SMTP_HOST"))
 
 
-def send_email(to_address, subject, body):
-    """发送纯文本邮件，返回是否真正发送成功。"""
-    if not to_address:
+def email_enabled():
+    """是否配置了任意一种邮件发送通道。"""
+    return brevo_enabled() or smtp_enabled()
+
+
+def _sender():
+    """返回 (name, email)，优先用 BREVO_SENDER_*，否则解析 MAIL_FROM。"""
+    config = current_app.config
+    name = config.get("BREVO_SENDER_NAME") or ""
+    email = config.get("BREVO_SENDER_EMAIL") or ""
+    if not email:
+        parsed_name, parsed_email = parseaddr(config.get("MAIL_FROM", ""))
+        email = parsed_email
+        name = name or parsed_name
+    return name, email
+
+
+def _send_via_brevo(to_address, subject, body):
+    config = current_app.config
+    name, sender_email = _sender()
+    if not sender_email:
+        current_app.logger.warning("Brevo 发件人邮箱未配置，跳过 Brevo 发送")
         return False
-    if not email_enabled():
-        current_app.logger.info("SMTP 未配置，跳过邮件发送：to=%s subject=%s", to_address, subject)
+    sender = {"email": sender_email}
+    if name:
+        sender["name"] = name
+    payload = json.dumps(
+        {
+            "sender": sender,
+            "to": [{"email": to_address}],
+            "subject": subject,
+            "textContent": body,
+        }
+    ).encode("utf-8")
+    req = urllib.request.Request(
+        BREVO_API_URL,
+        data=payload,
+        method="POST",
+        headers={
+            "api-key": config["BREVO_API_KEY"],
+            "content-type": "application/json",
+            "accept": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return 200 <= resp.status < 300
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")
+        current_app.logger.warning("Brevo 邮件发送失败：%s %s", exc.code, detail)
+        return False
+    except Exception as exc:  # noqa: BLE001 - 通知失败不应影响主流程
+        current_app.logger.warning("Brevo 邮件发送异常：%s", exc)
         return False
 
+
+def _send_via_smtp(to_address, subject, body):
     config = current_app.config
     message = EmailMessage()
     message["From"] = config["MAIL_FROM"]
     message["To"] = to_address
     message["Subject"] = subject
     message.set_content(body)
-
     try:
         with smtplib.SMTP(config["SMTP_HOST"], config["SMTP_PORT"], timeout=10) as server:
             if config["SMTP_USE_TLS"]:
@@ -39,8 +97,26 @@ def send_email(to_address, subject, body):
             server.send_message(message)
         return True
     except Exception as exc:  # noqa: BLE001 - 通知失败不应影响主流程
-        current_app.logger.warning("邮件发送失败：%s", exc)
+        current_app.logger.warning("SMTP 邮件发送失败：%s", exc)
         return False
+
+
+def send_email(to_address, subject, body):
+    """发送纯文本邮件，返回是否真正发送成功。
+
+    优先走 Brevo HTTP API（443 端口，免费托管平台通常放行），失败则退回 SMTP。
+    """
+    if not to_address:
+        return False
+    if not email_enabled():
+        current_app.logger.info("邮件通道未配置，跳过发送：to=%s subject=%s", to_address, subject)
+        return False
+
+    if brevo_enabled() and _send_via_brevo(to_address, subject, body):
+        return True
+    if smtp_enabled():
+        return _send_via_smtp(to_address, subject, body)
+    return False
 
 
 def send_sms(phone, body):
