@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% block title %}帖子列表 - 校园失物招领系统{% endblock %}
 {% block content %}
+{% if latest_announcement %}
+<section class="announce-card announce-banner" data-announce-id="{{ latest_announcement.id }}">
+  <button type="button" class="announce-close" aria-label="关闭公告">×</button>
+  <strong>📢 {{ latest_announcement.title }}</strong>
+  <p>{{ latest_announcement.body }}</p>
+  <a class="announce-more" href="{{ url_for('announcements_page') }}">查看全部公告 →</a>
+</section>
+{% endif %}
 <section class="app-hero">
   <div>
     <p class="eyebrow">Campus Board</p>

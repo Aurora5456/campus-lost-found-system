@@ -20,6 +20,7 @@
         <a href="{{ url_for('student_home') }}">首页</a>
         <a href="{{ url_for('create_post') }}">发布帖子</a>
         <a href="{{ url_for('my_posts') }}">我的帖子</a>
+        <a href="{{ url_for('announcements_page') }}">公告</a>
         <a class="nav-badge-link" href="{{ url_for('messages') }}">我的私信{% if unread_count %}<span class="nav-badge">{{ unread_count }}</span>{% endif %}</a>
         <a href="{{ url_for('settings') }}">设置</a>
         <a href="{{ url_for('logout') }}">退出</a>
@@ -48,16 +49,6 @@
         </section>
       {% endif %}
     {% endwith %}
-    {% if current_student and announcements %}
-      <section class="announce-stack">
-        {% for ann in announcements %}
-          <div class="announce-card">
-            <strong>📢 {{ ann.title }}</strong>
-            <p>{{ ann.body }}</p>
-          </div>
-        {% endfor %}
-      </section>
-    {% endif %}
     {% block content %}{% endblock %}
   </main>
 

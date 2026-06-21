@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}公告 - 校园失物招领系统{% endblock %}
+{% block content %}
+<section class="app-hero">
+  <div>
+    <p class="eyebrow">Announcements</p>
+    <h1>全站公告</h1>
+    <p>这里汇总了管理员发布的全部公告，按时间从新到旧排列。</p>
+  </div>
+  <div class="hero-actions">
+    <a class="btn ghost" href="{{ url_for('student_home') }}">返回首页</a>
+  </div>
+</section>
+
+{% if announcements %}
+  <section class="announce-stack">
+    {% for ann in announcements %}
+      <article class="announce-card">
+        <strong>📢 {{ ann.title }}</strong>
+        <p>{{ ann.body }}</p>
+        <small class="announce-time">{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      </article>
+    {% endfor %}
+  </section>
+{% else %}
+  <p class="empty-tip">暂无公告。</p>
+{% endif %}
+{% endblock %}
